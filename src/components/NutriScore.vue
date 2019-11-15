@@ -1,9 +1,9 @@
 <template>
-  <v-container text-center>
-    <h1>NutriScore Rechner</h1>
+  <v-container>
+    <h1 align="center">NutriScore Rechner</h1>
     <v-row justify="center">
       <v-col cols="12" sm="9" md="6" lg="4">
-        <v-form>
+        <v-form v-model="isValid">
           <v-row align="center">
             <v-radio-group v-model="solidFoodOrBeverage" row>
               <v-radio label="Lebensmittel" value="solidFood"></v-radio>
@@ -13,12 +13,12 @@
           <p>Nährwerte pro 100 Gramm</p>
           <v-row align="center">
             <v-col cols="5">
-              <v-text-field v-model="kcal" label="Energie (kcal)" type="number" min="0"/>
+              <v-text-field v-model="kcal" label="Energie (kcal)" :rules="numberRules"/>
             </v-col>
             <v-col cols="5">
               <v-text-field v-model="kj" label="Energie (kJ)" type="number" min="0" disabled/>
             </v-col>
-            <v-col cols="1" offset="1" class="red--text">
+            <v-col cols="1" offset="1" class="red--text" v-if="energyPoints">
               {{ energyPoints }}
             </v-col>
           </v-row>
@@ -73,34 +73,40 @@
               {{ fruitsPoints }}
             </v-col>
           </v-row>
+          <v-row v-if="isValid">
+            <v-col>
+              Gesamtpunkte
+            </v-col>
+            <v-col cols="1" offset="1" v-if="points">
+              {{ points }}
+            </v-col>
+          </v-row>
+          <v-row v-if="isValid">
+            <v-col>
+              NutriScore
+            </v-col>
+            <v-col v-if="points">
+              {{ score }}
+            </v-col>
+          </v-row>
         </v-form>
-        <v-row>
-          <v-col>
-            Gesamtpunkte
-          </v-col>
-          <v-col cols="1" offset="1">
-            {{ points }}
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            NutriScore
-          </v-col>
-          <v-col>
-            {{ score }}
-          </v-col>
-        </v-row>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
+function findPoints(array, n) {
+  const index = array.findIndex(threshold => n < threshold);
+  return index < 0 ? NaN : index;
+}
+
 export default {
   data: function () {
     return {
+      isValid: false,
       solidFoodOrBeverage: "solidFood",
-      kcal: null,
+      kcal: "",
       kj: null,
       sugars: null,
       fats: null,
@@ -109,12 +115,16 @@ export default {
       protein: null,
       fibers: null,
       fruits: "bis 40%",
-      fruitsOptions: [ "bis 40%", "mehr als 40%", "mehr als 60%", "mehr als 80%" ]
+      fruitsOptions: [ "bis 40%", "mehr als 40%", "mehr als 60%", "mehr als 80%" ],
+      numberRules: [
+        input => !Number.isNaN(Number.parseFloat(input.replace(",", ".")))
+      ]
     };
   },
   computed: {
     energyPoints: function() {
-      return [ 80.05, 160.05, 240.05, 320.05, 400.05, 480.05, 560.05, 640.05, 720.05, 800.05, Infinity ].findIndex(threshold => this.kcal < threshold);
+      const kcal = Number.parseFloat(this.kcal.replace(",", "."));
+      return findPoints([ 80.05, 160.05, 240.05, 320.05, 400.05, 480.05, 560.05, 640.05, 720.05, 800.05, Infinity ], this.kcal);
     },
     sugarsPoints: function() {
       return [ 4.505, 9.05, 13.505, 18.05, 22.505, 27.05, 31.05, 36.05, 40.05, 45.05, Infinity ].findIndex(threshold => this.sugars < threshold);
