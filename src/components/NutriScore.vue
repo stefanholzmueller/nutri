@@ -157,7 +157,7 @@ export default {
       if (this.points < 0) return "A (-15 bis -1 Punkte)";
       else if (this.points < 3) return "B (0 bis 2 Punkte)";
       else if (this.points < 11) return "C (3 bis 10 Punkte)";
-      else if (this.points < 10) return "D (11 bis 18 Punkte";
+      else if (this.points < 19) return "D (11 bis 18 Punkte";
       else return "E (19 bis 40 Punkte)";
     }
   }
